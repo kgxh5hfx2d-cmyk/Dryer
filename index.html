@@ -3,35 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dryer Control Pro v6</title>
+    <title>Dryer Control Pro v8.2</title>
     <style>
-        :root { --bg: #0d1117; --card: #161b22; --accent: #58a6ff; --text: #c9d1d9; --success: #238636; --warning: #d29922; --danger: #da3633; --info: #1f6feb; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; }
-        .hmi-container { background: var(--card); border: 1px solid #30363d; border-radius: 12px; width: 100%; max-width: 400px; padding: 15px; box-sizing: border-box; margin: auto; }
-        .header { display: flex; justify-content: space-between; border-bottom: 1px solid #30363d; padding-bottom: 10px; margin-bottom: 15px; color: var(--accent); font-weight: bold; font-family: monospace; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .input-box { background: #010409; border: 1px solid #30363d; padding: 10px; border-radius: 8px; }
-        label { font-size: 10px; color: #8b949e; text-transform: uppercase; display: block; margin-bottom: 4px; }
+        :root { 
+            --bg-dark: #0a0d14; --bg-light: #161b22; --accent: #58a6ff; 
+            --text: #c9d1d9; --dim-text: #8b949e; --success: #238636; 
+            --warning: #d29922; --danger: #da3633; --info: #1f6feb;
+        }
+
+        body { 
+            font-family: -apple-system, system-ui, sans-serif; background: var(--bg-dark); 
+            color: var(--text); display: flex; justify-content: center; min-height: 100vh;
+            margin: 0; padding: 15px; background-image: radial-gradient(at top left, var(--bg-light) 0%, transparent 50%);
+        }
+
+        .hmi-container { 
+            background: var(--bg-light); border: 1px solid #30363d; border-radius: 18px;
+            width: 100%; max-width: 400px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            align-self: flex-start;
+        }
+
+        .header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid #30363d; padding-bottom: 15px; margin-bottom: 20px; 
+        }
+
+        .atomizer-icon { width: 50px; height: 50px; fill: var(--accent); }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+
+        .input-box { 
+            background: var(--bg-dark); padding: 10px 12px; border-radius: 12px; 
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5); border: 1px solid transparent;
+        }
+        .input-box:focus-within { border-color: var(--accent); }
+
+        label { font-size: 9px; color: var(--dim-text); text-transform: uppercase; display: block; margin-bottom: 4px; }
         input { width: 100%; background: transparent; border: none; color: #fff; font-size: 18px; outline: none; font-family: monospace; }
-        .monitor-box { background: #0d1117; border-left: 4px solid var(--success); padding: 12px; border-radius: 6px; margin-bottom: 10px; }
-        .data-val { font-size: 24px; font-weight: bold; color: #ffffff; font-family: monospace; }
-        .status-msg { padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 13px; margin-bottom: 15px; color: white; border: 1px solid transparent; }
-        button { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: bold; font-size: 14px; margin-top: 8px; -webkit-appearance: none; cursor: pointer; }
-        .btn-log { background: var(--success); color: white; }
-        .btn-share { background: #007aff; color: white; }
-        .log-list { background: #010409; border-radius: 8px; padding: 10px; font-size: 11px; margin-top: 15px; max-height: 120px; overflow-y: auto; }
-        .log-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #222; }
-        /* Footer Style */
-        .footer-credit { text-align: center; font-size: 10px; color: #8b949e; margin-top: 20px; font-family: monospace; opacity: 0.7; }
+        input:disabled { color: var(--accent); opacity: 1; }
+
+        .status-msg { 
+            padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; 
+            font-size: 13px; margin-bottom: 15px; color: white; transition: 0.3s;
+        }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .alarm-active { animation: blink 0.8s infinite; background-color: var(--danger) !important; border: 2px solid white; }
+
+        .monitor-box { 
+            background: var(--bg-dark); border-left: 4px solid var(--success); 
+            padding: 12px; border-radius: 8px; margin-bottom: 10px;
+        }
+
+        .data-val { font-size: 22px; font-weight: bold; font-family: monospace; }
+
+        button { 
+            width: 100%; padding: 14px; border-radius: 10px; border: none; 
+            font-weight: bold; margin-top: 8px; cursor: pointer; color: white;
+        }
+        .btn-log { background: var(--success); }
+        .btn-share { background: var(--info); }
+
+        .footer { text-align: center; font-size: 10px; color: var(--dim-text); margin-top: 20px; font-family: monospace; }
     </style>
 </head>
 <body>
 
 <div class="hmi-container">
-    <div class="header"><span>DRYER-LOGIC-V6</span><span id="clock">00:00</span></div>
+    <div class="header">
+        <div style="display:flex; flex-direction:column;">
+            <span style="color:var(--accent); font-weight:bold; font-family:monospace;">DRYER-PRO v8.2</span>
+            <span id="clock" style="font-size:12px; color:var(--dim-text);">00:00</span>
+        </div>
+        <svg class="atomizer-icon" viewBox="0 0 64 64">
+            <path d="M32 8c-13.25 0-24 10.75-24 24s10.75 24 24 24 24-10.75 24-24S45.25 8 32 8zm0 44c-11.05 0-20-8.95-20-20s8.95-20 20-20 20 8.95 20 20-8.95 20-20 20z"/>
+            <path d="M32 18c-7.73 0-14 6.27-14 14s6.27 14 14 14 14-6.27 14-14-6.27-14-14-14zm0 24c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10z"/>
+            <circle cx="32" cy="32" r="4"/>
+            <path d="M32 24v-4M32 44v-4M24 32h-4M44 32h-4" stroke="currentColor" stroke-width="2"/>
+        </svg>
+    </div>
 
     <div class="grid">
-        <div class="input-box" style="border-color: var(--accent);">
+        <div class="input-box">
             <label>Dichte (kg/m³)</label>
             <input type="number" id="rho_input" value="1248" oninput="calculateFromDensity()">
         </div>
@@ -44,8 +97,8 @@
             <input type="number" id="vol" value="9000" oninput="calculate()">
         </div>
         <div class="input-box">
-            <label>Ber. TS %</label>
-            <input type="number" id="ts" value="55.1" oninput="calculate()">
+            <label>Restwasser Pulver %</label>
+            <input type="number" id="p_water" value="1.0" step="0.1" oninput="calculate()">
         </div>
         <div class="input-box">
             <label>Zuluft °C</label>
@@ -55,38 +108,35 @@
             <label>Abluft °C</label>
             <input type="number" id="t_ab" value="88" oninput="calculate()">
         </div>
+        <div class="input-box" style="grid-column: span 2; border-color: var(--accent);">
+            <label>Berechneter TS % (aus Dichte)</label>
+            <input type="number" id="ts" value="55.1" disabled>
+        </div>
     </div>
 
-    <div id="status" class="status-msg">SYSTEM STABIL</div>
+    <div id="status" class="status-msg">SYSTEM BEREIT</div>
 
-    <div class="monitor-box" style="border-left-color: var(--info);">
-        <label>Konzentrat Gehalt (aus Dichte)</label>
-        <div class="data-val" id="res_ts_display" style="color: var(--accent);">-- % TS</div>
+    <div class="monitor-box" style="border-left-color: #ff9f43;">
+        <label>Feststoff im Zulauf (kg TS/h)</label>
+        <div class="data-val" id="res_ts_abs" style="color: #ff9f43;">--</div>
     </div>
 
     <div class="monitor-box">
-        <label>Trockenmasse absolut</label>
-        <div class="data-val" id="res_ts_abs" style="color: #ff9f43;">-- kg/h</div>
-    </div>
-
-    <div class="monitor-box">
-        <label>Pulverproduktion (97% TS)</label>
+        <label id="p_label">Pulvermenge (1.0% H2O)</label>
         <div class="data-val" id="res_p">--</div>
     </div>
 
     <div class="monitor-box" style="border-left-color: var(--accent);">
-        <label>Wasserverdampfung</label>
+        <label>Verdampfungsrate</label>
         <div class="data-val" id="res_w" style="color: var(--accent);">--</div>
     </div>
 
-    <div style="font-size: 11px; text-align: center; color: #8b949e; margin-bottom: 10px;" id="res_eff">--</div>
+    <div style="font-size: 10px; text-align: center; color: var(--dim-text); margin-bottom: 10px;" id="res_eff">--</div>
 
     <button class="btn-log" onclick="logData()">💾 DATEN SPEICHERN</button>
-    <button class="btn-share" onclick="shareReport()">📤 PER WHATSAPP TEILEN</button>
-
-    <div class="log-list" id="logbook"><div style="text-align:center; color:#555">Keine Einträge</div></div>
+    <button class="btn-share" onclick="shareReport()">📤 PER WHATSAPP</button>
     
-    <div class="footer-credit">Geschrieben von E. Meisner</div>
+    <div class="footer">Geschrieben von E. Meisner</div>
 </div>
 
 <script>
@@ -103,33 +153,46 @@
         const tZu = parseFloat(document.getElementById('t_zu').value) || 0;
         const tAb = parseFloat(document.getElementById('t_ab').value) || 0;
         const vol = parseFloat(document.getElementById('vol').value) || 0;
-        const tsZ = (parseFloat(document.getElementById('ts').value) || 0) / 100;
+        const tsVal = parseFloat(document.getElementById('ts').value) || 0;
         const densInput = parseFloat(document.getElementById('rho_input').value) || 1000;
+        const restWater = parseFloat(document.getElementById('p_water').value) || 0;
         
         const rho = densInput / 1000; 
-        const tsP = 0.97;
+        const tsZ = tsVal / 100;
+        // Ziel-TS des Pulvers (z.B. 100% - 1% = 99% TS)
+        const tsP = (100 - restWater) / 100;
 
         const mZ = vol * rho;                
-        const mTS_abs = mZ * tsZ;            
+        const mTS_abs = mZ * tsZ;   
+        
+        // Pulvermenge basierend auf der neuen Restfeuchte
         const mP = mTS_abs / tsP;            
         const mW = mZ - mP;                  
         
-        document.getElementById('res_ts_display').innerText = (tsZ * 100).toFixed(1) + " % TS";
+        document.getElementById('p_label').innerText = "Pulvermenge (" + restWater.toFixed(1) + "% H2O)";
         document.getElementById('res_ts_abs').innerText = Math.round(mTS_abs).toLocaleString('de-DE') + " kg/h";
         document.getElementById('res_p').innerText = Math.round(mP).toLocaleString('de-DE') + " kg/h";
         document.getElementById('res_w').innerText = Math.round(mW).toLocaleString('de-DE') + " kg/h";
         
         const costT = mP > 0 ? ((mW * 1.2 * 0.08) / (mP / 1000)) : 0;
-        document.getElementById('res_eff').innerText = "Kosten: " + costT.toFixed(2) + " €/t | ΔT: " + (tZu - tAb) + " K";
+        document.getElementById('res_eff').innerText = "Energie: " + costT.toFixed(2) + " €/t | ΔT: " + (tZu - tAb) + " K";
 
         const st = document.getElementById('status');
+        st.classList.remove('alarm-active');
+
+        if (densInput < 1050 && densInput > 900) {
+            st.innerText = "⚠️ ACHTUNG: DICHTE ZU NIEDRIG";
+            st.classList.add('alarm-active');
+            return;
+        }
+
         const targetAb = 88 - (tZu - 194) * 0.5;
 
         if (tAb > targetAb + 2) {
-            st.innerText = "HINWEIS: ABLUFT ZU HOCH";
+            st.innerText = "ABLUFT ZU HOCH";
             st.style.backgroundColor = "#da3633";
         } else if (tAb < targetAb - 5) {
-            st.innerText = "HINWEIS: ABLUFT TIEF";
+            st.innerText = "ABLUFT TIEF";
             st.style.backgroundColor = "#d29922";
         } else {
             st.innerText = "PROZESS OPTIMAL";
@@ -141,16 +204,15 @@
         const ts = document.getElementById('ts').value;
         const p = document.getElementById('res_p').innerText;
         const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const lb = document.getElementById('logbook');
-        if(lb.innerHTML.includes("Keine Einträge")) lb.innerHTML = "";
-        lb.innerHTML = '<div class="log-item"><span>' + time + ' (' + ts + '%)</span><span>P: ' + p + '</span></div>' + lb.innerHTML;
+        const msg = time + " | TS: " + ts + "% | P: " + p;
+        console.log("Gespeichert: " + msg);
+        alert("Daten gespeichert: " + msg);
     }
 
     function shareReport() {
         const ts = document.getElementById('ts').value;
         const p = document.getElementById('res_p').innerText;
-        const w = document.getElementById('res_w').innerText;
-        const msg = "*Trockner-Report*\nGehalt: " + ts + "% TS\nPulver: " + p + "\nWasser: " + w;
+        const msg = "*Dryer-Report*\nTS: " + ts + "%\nPulver: " + p;
         window.location.href = "whatsapp://send?text=" + encodeURIComponent(msg);
     }
 
