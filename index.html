@@ -244,7 +244,7 @@
         .val { font-weight: 700; font-size: 18px; }
 
         /* --- MODALS --- */
-        #calc-modal, #energy-modal, #rule3-modal, #info-modal, #tank-modal {
+        #calc-modal, #energy-modal, #rule3-modal, #info-modal, #tank-modal, #silo-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -341,6 +341,11 @@
         }
         .result-box .val { color: var(--accent); font-size: 24px; display: block; }
         .result-box label { font-size: 12px; color: var(--sub-text); text-transform: uppercase; }
+
+        /* Silo Specific Styles */
+        .silo-item { margin-bottom: 20px; border-bottom: 0.5px solid var(--input-bg); padding-bottom: 15px; }
+        .silo-item:last-child { border: none; }
+        .silo-time { font-weight: 800; color: var(--orange); font-size: 16px; }
     </style>
 </head>
 <body data-theme="light">
@@ -352,6 +357,9 @@
             <div style="font-size: 14px; font-weight: 700; color: var(--accent); opacity: 0.9;">DRYER PRO v26</div>
         </div>
         <div class="button-group">
+            <button class="cc-action-btn" onclick="openModal('silo-modal')">
+                <div class="tank-icon">🏗️</div>
+            </button>
             <button class="cc-action-btn" onclick="openModal('tank-modal')">
                 <div class="tank-icon">⌛</div>
             </button>
@@ -436,6 +444,38 @@
     </div>
 </div>
 
+<div id="silo-modal" onclick="closeModal('silo-modal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 style="margin: 0 0 15px 0; font-size: 18px; text-align: center;">Pulversilos (Max. 105t)</h3>
+        
+        <div class="silo-item">
+            <div class="input-group">
+                <label>Stand Silo 1 (kg)</label>
+                <input type="number" id="silo1_val" value="0" oninput="calcSilos()">
+            </div>
+            <div style="margin-top: 8px; font-size: 13px;">Zeit bis voll: <span class="silo-time" id="silo1_time">--</span></div>
+        </div>
+
+        <div class="silo-item">
+            <div class="input-group">
+                <label>Stand Silo 2 (kg)</label>
+                <input type="number" id="silo2_val" value="0" oninput="calcSilos()">
+            </div>
+            <div style="margin-top: 8px; font-size: 13px;">Zeit bis voll: <span class="silo-time" id="silo2_time">--</span></div>
+        </div>
+
+        <div class="silo-item">
+            <div class="input-group">
+                <label>Stand Silo 3 (kg)</label>
+                <input type="number" id="silo3_val" value="0" oninput="calcSilos()">
+            </div>
+            <div style="margin-top: 8px; font-size: 13px;">Zeit bis voll: <span class="silo-time" id="silo3_time">--</span></div>
+        </div>
+
+        <button class="calc-btn op" style="background: var(--accent); width: 100%; margin-top: 10px;" onclick="closeModal('silo-modal')">Schließen</button>
+    </div>
+</div>
+
 <div id="tank-modal" onclick="closeModal('tank-modal')">
     <div class="modal-content" onclick="event.stopPropagation()">
         <h3 style="margin: 0 0 15px 0; font-size: 18px; text-align: center;">Kristaller / Tank</h3>
@@ -471,33 +511,11 @@
             <h4>1. Feststoff-Berechnung (TS)</h4>
             <p>Die Ermittlung der Trockensubstanz basiert auf der Differenz zur Basisdichte von Wasser:</p>
             <div class="formula">TS % = (Dichte - 1000) / Faktor</div>
-            <p>Ein Faktor von 4.5 entspricht dem Standard für Molkekonzentrat.</p>
         </div>
 
         <div class="info-section">
-            <h4>2. Mengenströme</h4>
-            <p>Berechnung der Massenströme unter Berücksichtigung der Dichte ($\rho$):</p>
-            <div class="formula">Masse-Zulauf = Volumen * (\rho / 1000)</div>
-            <div class="formula">Pulver = Masse-TS / ((100 - Restfeuchte)/100)</div>
-            <div class="formula">Verdampfung = Masse-Zulauf - Pulver</div>
-        </div>
-
-        <div class="info-section">
-            <h4>3. Energie & Kosten</h4>
-            <p>Die Energiekosten pro Tonne Fertigpulver berücksichtigen Gas (für die Zuluft-Erhitzung) und Strom (für Antriebe/Lüfter):</p>
-            <div class="formula">Kosten/t = [(Wassermenge * Wirkungsgrad * Gaspreis) + (Wassermenge * 0.12 * Strompreis)] / Tonnen Pulver</div>
-        </div>
-
-        <div class="info-section">
-            <h4>4. Status-Logik (Abluft-Soll)</h4>
-            <p>Die Soll-Ablufttemperatur wird dynamisch an die Zuluft angepasst, um die Verdampfungsleistung konstant zu halten:</p>
-            <div class="formula">Soll-Abluft = 88 - (Zuluft - 194) * 0.5</div>
-            <p>Abweichungen > 2K lösen eine Warnung aus, > 5K oder kritische Dichten (< 1050 kg/m³) lösen einen Alarm aus.</p>
-        </div>
-
-        <div class="info-section">
-            <h4>5. Tank-Logik</h4>
-            <p>Die Restlaufzeit ist der Quotient aus aktuellem Volumen und aktuellem Zulauf. Der Ertrag berechnet die total verfügbare Pulvermenge im aktuellen Tankinhalt.</p>
+            <h4>Silo-Logik</h4>
+            <p>Die Zeit bis zum Erreichen der 105.000 kg Grenze wird dynamisch aus dem aktuellen Pulver-Massenstrom berechnet (dieser inkludiert die Restfeuchte).</p>
         </div>
 
         <button class="calc-btn op" style="background: var(--accent); width: 100%; margin-top: 10px;" onclick="closeModal('info-modal')">Schließen</button>
@@ -562,6 +580,8 @@
 </div>
 
 <script>
+    let global_mP = 0; // Aktueller kg/h Pulverstrom
+
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.body.setAttribute('data-theme', savedTheme);
     document.getElementById('theme-toggle').checked = (savedTheme === 'dark');
@@ -576,6 +596,7 @@
     function openModal(id) { 
         document.getElementById(id).style.display = 'flex'; 
         if(id === 'tank-modal') calcTank();
+        if(id === 'silo-modal') calcSilos();
     }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
@@ -620,7 +641,6 @@
 
         document.getElementById('sync_flow').innerText = currentFlow;
 
-        // Zeit berechnen
         if(currentFlow > 0) {
             const totalHours = tankVol / currentFlow;
             const h = Math.floor(totalHours);
@@ -630,10 +650,34 @@
             document.getElementById('tank_time').innerText = "---";
         }
 
-        // Pulver berechnen
         const massTank = tankVol * (dens/1000);
         const powderYield = (massTank * (tsVal/100)) / ((100 - pWater)/100);
         document.getElementById('tank_powder').innerText = Math.round(powderYield).toLocaleString('de-DE') + " kg";
+    }
+
+    // SILO LOGIC
+    function calcSilos() {
+        const cap = 105000;
+        const silos = ['silo1', 'silo2', 'silo3'];
+        
+        silos.forEach(s => {
+            const current = parseFloat(document.getElementById(s + '_val').value) || 0;
+            const target = document.getElementById(s + '_time');
+            
+            if (global_mP > 1 && current < cap) {
+                const diff = cap - current;
+                const hoursTotal = diff / global_mP;
+                const h = Math.floor(hoursTotal);
+                const m = Math.round((hoursTotal - h) * 60);
+                target.innerText = h + "h " + m + "m";
+                target.style.color = "var(--orange)";
+            } else if (current >= cap) {
+                target.innerText = "VOLL";
+                target.style.color = "var(--red)";
+            } else {
+                target.innerText = "---";
+            }
+        });
     }
 
     function calculateFromDensity() {
@@ -658,12 +702,14 @@
 
         const rho = densInput / 1000; 
         const tsZ = tsVal / 100;
-        const tsP = (100 - restWater) / 100;
+        const tsP = (100 - restWater) / 100; // Trockenheit des Pulvers
         const mZ = vol * rho;                
         const mTS_abs = mZ * tsZ;   
-        const mP = mTS_abs / tsP;            
+        const mP = mTS_abs / tsP; // Realer kg/h Wert inkl. Restfeuchte
         const mW = mZ - mP;                  
         
+        global_mP = mP; // Wert für Silo-Logik übergeben
+
         document.getElementById('p_label').innerText = "Pulver (" + restWater.toFixed(1) + "% H2O)";
         document.getElementById('res_ts_abs').innerText = Math.round(mTS_abs).toLocaleString('de-DE') + " kg/h";
         document.getElementById('res_p').innerText = Math.round(mP).toLocaleString('de-DE') + " kg/h";
@@ -687,6 +733,9 @@
         } else {
             st.innerText = "PROZESS OPTIMAL"; st.classList.add('ready');
         }
+        
+        // Silo-Vorschau aktualisieren, falls offen
+        calcSilos();
     }
 
     function updateClock() {
